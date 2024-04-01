@@ -1,10 +1,4 @@
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: my-db-password
-type: Opaque
----
 apiVersion: sql.gcp.upbound.io/v1beta1
 kind: DatabaseInstance
 metadata:
