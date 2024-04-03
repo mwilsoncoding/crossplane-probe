@@ -173,3 +173,22 @@ spec:
   writeConnectionSecretToRef:
     name: db-inst-01-connection
     namespace: a-team
+---
+apiVersion: compute.gcp.upbound.io/v1beta1
+kind: Instance
+metadata:
+  name: my-vm
+spec:
+  forProvider:
+    bootDisk:
+      - initializeParams:
+          - image: debian-cloud/debian-11
+    machineType: f1-micro
+    networkInterface:
+      - networkRef:
+          name: dev-network
+    zone: us-central1-b
+    desiredStatus: RUNNING
+    allowStoppingForUpdate: true
+    tags:
+      - allow-ssh
