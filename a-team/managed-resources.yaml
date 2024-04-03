@@ -25,7 +25,7 @@ kind: Firewall
 metadata:
   annotations:
     meta.upbound.io/id: compute/v1beta1/forwardingrule
-  name: allow-ssh
+  name: allow-iap-ssh
 spec:
   forProvider:
     allow:
@@ -36,7 +36,7 @@ spec:
     networkRef:
       name: dev-network
     sourceRanges:
-      - 0.0.0.0
+      - 35.235.240.0/20
     targetTags:
       - allow-ssh
 # ---
