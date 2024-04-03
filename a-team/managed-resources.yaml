@@ -38,7 +38,7 @@ spec:
       - protocol: icmp
     direction: INGRESS
     networkRef:
-      name: peer-network
+      name: peering-network
     sourceRanges:
       - 10.128.0.0/9
 ---
