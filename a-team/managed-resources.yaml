@@ -147,33 +147,6 @@ spec:
       - name: db-private-ip
     service: servicenetworking.googleapis.com
 ---
-apiVersion: sql.gcp.upbound.io/v1beta1
-kind: DatabaseInstance
-metadata:
-  annotations:
-    meta.upbound.io/id: sql/v1beta1/databaseinstance
-  name: db-inst-01
-spec:
-  forProvider:
-    databaseVersion: POSTGRES_15
-    deletionProtection: false
-    region: us-central1
-    settings:
-      - diskSize: 10
-        edition: ENTERPRISE
-        insightsConfig:
-          - queryInsightsEnabled: true
-            queryStringLength: 4500
-            recordApplicationTags: true
-        ipConfiguration:
-          - ipv4Enabled: false
-            privateNetworkRef:
-              name: peering-network
-        tier: db-f1-micro
-  writeConnectionSecretToRef:
-    name: db-inst-01-connection
-    namespace: a-team
----
 apiVersion: compute.gcp.upbound.io/v1beta1
 kind: Instance
 metadata:
