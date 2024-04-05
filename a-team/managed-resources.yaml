@@ -1,0 +1,234 @@
+---
+apiVersion: compute.gcp.upbound.io/v1beta1
+kind: Network
+metadata:
+  name: dev-network
+spec:
+  forProvider: {}
+# ---
+# apiVersion: compute.gcp.upbound.io/v1beta1
+# kind: Firewall
+# metadata:
+#   annotations:
+#     meta.upbound.io/id: compute/v1beta1/forwardingrule
+#   name: allow-all-internal-db
+# spec:
+#   forProvider:
+#     allow:
+#       - ports:
+#           - "0-65535"
+#         protocol: tcp
+#       - ports:
+#           - "0-65535"
+#         protocol: udp
+#       - protocol: icmp
+#     direction: INGRESS
+#     networkRef:
+#       name: peering-network
+#     sourceRanges:
+#       - 10.128.0.0/9
+---
+apiVersion: compute.gcp.upbound.io/v1beta1
+kind: Firewall
+metadata:
+  annotations:
+    meta.upbound.io/id: compute/v1beta1/forwardingrule
+  name: allow-all-internal
+spec:
+  forProvider:
+    allow:
+      - ports:
+          - "0-65535"
+        protocol: tcp
+      - ports:
+          - "0-65535"
+        protocol: udp
+      - protocol: icmp
+    direction: INGRESS
+    networkRef:
+      name: dev-network
+    sourceRanges:
+      - 10.128.0.0/9
+---
+apiVersion: compute.gcp.upbound.io/v1beta1
+kind: Firewall
+metadata:
+  annotations:
+    meta.upbound.io/id: compute/v1beta1/forwardingrule
+  name: allow-iap-ssh
+spec:
+  forProvider:
+    allow:
+      - ports:
+          - "22"
+        protocol: tcp
+    direction: INGRESS
+    networkRef:
+      name: dev-network
+    sourceRanges:
+      - 35.235.240.0/20
+    targetTags:
+      - allow-ssh
+---
+apiVersion: compute.gcp.upbound.io/v1beta1
+kind: GlobalAddress
+metadata:
+  annotations:
+    meta.upbound.io/id: compute/v1beta1/globaladdress
+  name: google-managed-services-dev-network
+spec:
+  forProvider:
+    addressType: INTERNAL
+    networkRef:
+      name: dev-network
+    prefixLength: 16
+    purpose: VPC_PEERING
+# ---
+# apiVersion: compute.gcp.upbound.io/v1beta1
+# kind: NetworkPeeringRoutesConfig
+# metadata:
+#   annotations:
+#     meta.upbound.io/id: compute/v1beta1/networkpeeringroutesconfig
+#   name: peering-primary-routes
+# spec:
+#   forProvider:
+#     exportCustomRoutes: true
+#     importCustomRoutes: true
+#     networkRef:
+#       name: peering-network
+#     peeringRef:
+#       name: network-peering
+# ---
+# apiVersion: compute.gcp.upbound.io/v1beta1
+# kind: NetworkPeering
+# metadata:
+#   annotations:
+#     meta.upbound.io/id: compute/v1beta1/networkpeering
+#   name: network-peering
+# spec:
+#   forProvider:
+#     exportCustomRoutes: true
+#     importCustomRoutes: true
+#     networkRef:
+#       name: dev-network
+#     peerNetworkRef:
+#       name: peering-network
+# ---
+# apiVersion: compute.gcp.upbound.io/v1beta1
+# kind: Network
+# metadata:
+#   annotations:
+#     meta.upbound.io/id: compute/v1beta1/peeringnetwork
+#   name: peering-network
+# spec:
+#   forProvider:
+#     autoCreateSubnetworks: false
+---
+apiVersion: compute.gcp.upbound.io/v1beta1
+kind: RouterNAT
+metadata:
+  annotations:
+    meta.upbound.io/id: compute/v1beta1/routernat
+  name: dev-net-routernat
+spec:
+  forProvider:
+    logConfig:
+      - enable: true
+        filter: ERRORS_ONLY
+    natIpAllocateOption: AUTO_ONLY
+    region: us-central1
+    routerRef:
+      name: dev-net-router
+    sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
+---
+apiVersion: compute.gcp.upbound.io/v1beta1
+kind: Router
+metadata:
+  annotations:
+    meta.upbound.io/id: compute/v1beta1/router
+  name: dev-net-router
+spec:
+  forProvider:
+    bgp:
+      - asn: 64514
+    networkRef:
+      name: dev-network
+    region: us-central1
+---
+apiVersion: cloudplatform.gcp.upbound.io/v1beta1
+kind: ServiceAccount
+metadata:
+  annotations:
+    meta.upbound.io/id: cloudplatform/v1beta1/serviceaccount
+  name: sql-bastion
+spec:
+  forProvider:
+    displayName: Service Account for SQL access
+---
+apiVersion: servicenetworking.gcp.upbound.io/v1beta1
+kind: Connection
+metadata:
+  annotations:
+    meta.upbound.io/id: servicenetworking/v1beta1/connection
+  name: service-connection
+spec:
+  forProvider:
+    networkRef:
+      name: dev-network
+    reservedPeeringRangesRefs:
+      - name: google-managed-services-dev-network
+    service: servicenetworking.googleapis.com
+---
+apiVersion: sql.gcp.upbound.io/v1beta1
+kind: DatabaseInstance
+metadata:
+  annotations:
+    meta.upbound.io/id: sql/v1beta1/databaseinstance
+  name: db-inst-02
+spec:
+  forProvider:
+    databaseVersion: POSTGRES_15
+    deletionProtection: false
+    region: us-central1
+    rootPasswordSecretRef:
+      key: password
+      name: db-inst-02-admin
+      namespace: a-team
+    settings:
+      - diskSize: 10
+        edition: ENTERPRISE
+        insightsConfig:
+          - queryInsightsEnabled: true
+            queryStringLength: 4500
+            recordApplicationTags: true
+        ipConfiguration:
+          - ipv4Enabled: false
+            privateNetworkRef:
+              name: dev-network
+        tier: db-f1-micro
+  publishConnectionDetailsTo:
+    name: db-inst-02-connection
+---
+apiVersion: compute.gcp.upbound.io/v1beta1
+kind: Instance
+metadata:
+  name: my-vm
+spec:
+  forProvider:
+    allowStoppingForUpdate: true
+    bootDisk:
+      - initializeParams:
+          - image: debian-cloud/debian-11
+    desiredStatus: RUNNING
+    machineType: e2-micro
+    networkInterface:
+      - networkRef:
+          name: dev-network
+    serviceAccount:
+      - emailRef:
+          name: sql-bastion
+        scopes:
+          - https://www.googleapis.com/auth/sqlservice.admin
+    tags:
+      - allow-ssh
+    zone: us-central1-b
