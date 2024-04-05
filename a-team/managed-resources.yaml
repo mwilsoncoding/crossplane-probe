@@ -228,7 +228,7 @@ spec:
       - emailRef:
           name: sql-bastion
         scopes:
-          - sqlservice.admin
+          - https://www.googleapis.com/auth/sqlservice.admin
     tags:
       - allow-ssh
     zone: us-central1-b
