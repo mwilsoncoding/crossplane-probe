@@ -163,7 +163,7 @@ metadata:
   name: sql-bastion-iam
 spec:
   forProvider:
-    # member: serviceAccount:sql-bastion@crossplane-probe.iam.gserviceaccount.com
+    member: serviceAccount:sql-bastion@crossplane-probe.iam.gserviceaccount.com
     role: roles/cloudsql.client
     serviceAccountRef:
       name: sql-bastion
