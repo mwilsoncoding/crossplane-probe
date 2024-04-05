@@ -156,17 +156,16 @@ spec:
     region: us-central1
 ---
 apiVersion: cloudplatform.gcp.upbound.io/v1beta1
-kind: ServiceAccountIAMMember
+kind: ProjectIAMMember
 metadata:
   annotations:
-    meta.upbound.io/id: cloudplatform/v1beta1/serviceaccountiammember
+    meta.upbound.io/id: cloudplatform/v1beta1/projectiammember
   name: sql-bastion-iam
 spec:
   forProvider:
     member: serviceAccount:sql-bastion@crossplane-probe.iam.gserviceaccount.com
+    project: crossplane-probe
     role: roles/cloudsql.client
-    serviceAccountIdRef:
-      name: sql-bastion
 ---
 apiVersion: cloudplatform.gcp.upbound.io/v1beta1
 kind: ServiceAccount
