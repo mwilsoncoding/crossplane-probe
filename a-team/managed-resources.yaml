@@ -220,32 +220,34 @@ spec:
         tier: db-f1-micro
   publishConnectionDetailsTo:
     name: db-inst-02-connection
-# ---
-# apiVersion: compute.gcp.upbound.io/v1beta1
-# kind: Instance
-# metadata:
-#   name: sql-bastion
-# spec:
-#   forProvider:
-#     allowStoppingForUpdate: true
-#     bootDisk:
-#       - initializeParams:
-#           - image: debian-cloud/debian-11
-#     desiredStatus: RUNNING
-#     machineType: e2-micro
-#     metadataStartupScript: |-
-#       sudo apt-get update
-#       sudo apt-get install postgresql-client
-#       curl -o /usr/bin/cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.10.1/cloud-sql-proxy.linux.amd64
-#       chmod +x /usr/bin/cloud-sql-proxy
-#     networkInterface:
-#       - networkRef:
-#           name: dev-network
-#     serviceAccount:
-#       - emailRef:
-#           name: sql-bastion
-#         scopes:
-#           - https://www.googleapis.com/auth/sqlservice.admin
-#     tags:
-#       - allow-ssh
-#     zone: us-central1-b
+---
+apiVersion: compute.gcp.upbound.io/v1beta1
+kind: Instance
+metadata:
+  name: sql-bastion
+spec:
+  forProvider:
+    allowStoppingForUpdate: true
+    bootDisk:
+      - initializeParams:
+          - image: debian-cloud/debian-11
+    desiredStatus: RUNNING
+    machineType: e2-micro
+    metadataStartupScript: |-
+      export DEBIAN_FRONTEND=noninteractive &&
+      apt-get update &&
+      apt-get install postgresql-client &&
+      unset DEBIAN_FRONTEND &&
+      curl -o /usr/bin/cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.10.1/cloud-sql-proxy.linux.amd64 &&
+      chmod +x /usr/bin/cloud-sql-proxy
+    networkInterface:
+      - networkRef:
+          name: dev-network
+    serviceAccount:
+      - emailRef:
+          name: sql-bastion
+        scopes:
+          - https://www.googleapis.com/auth/sqlservice.admin
+    tags:
+      - allow-ssh
+    zone: us-central1-b
