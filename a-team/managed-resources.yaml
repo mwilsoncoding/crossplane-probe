@@ -224,7 +224,7 @@ spec:
 apiVersion: compute.gcp.upbound.io/v1beta1
 kind: Instance
 metadata:
-  name: my-vm
+  name: sql-bastion
 spec:
   forProvider:
     allowStoppingForUpdate: true
