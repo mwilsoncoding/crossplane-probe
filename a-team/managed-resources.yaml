@@ -39,7 +39,9 @@ spec:
     initialNodeCount: 1
     ipAllocationPolicy:
       - {}
-    location: us-central1-b
+    # Autopilot must be regional
+    location: us-central1
+    #location: us-central1-b
     # loggingConfig:
     #   - enableComponents:
     #       - SYSTEM_COMPONENTS
