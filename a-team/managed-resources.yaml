@@ -1,4 +1,82 @@
 ---
+apiVersion: container.gcp.upbound.io/v1beta1
+kind: Cluster
+metadata:
+  annotations:
+    meta.upbound.io/id: container/v1beta1/cluster
+  name: cluster
+spec:
+  forProvider:
+    # costManagementConfig:
+    #   - enabled: true
+    # clusterAutoscaling:
+    #   - autoProvisioningDefaults:
+    #       - management:
+    #           - autoRepair: true
+    #             autoUpgrade: true
+    #         upgradeSettings:
+    #           - maxUnavailable: 1
+    #     # Enabled is implied in autopilot
+    #     # enabled: true
+    #     resourceLimits:
+    #       - maximum: 8
+    #         minimum: 1
+    #         resourceType: cpu
+    #       - maximum: 32
+    #         minimum: 1
+    #         resourceType: memory
+    #     serviceAccountRef:
+    #       name: gke-sa
+    # databaseEncryption:
+    #   - keyName: projects/${KEY_PROJECT_ID}/locations/${GKE_CLUSTER_REGION}/keyRings/${KEY_RING}/cryptoKeys/${KEY_NAME}
+    deletionProtection: false
+    enableAutopilot: true
+    enableIntranodeVisibility: true
+    # fleet:
+    #   - project: ${ANTHOS_FLEET_HOST_PROJECT}
+    # gatewayApiConfig:
+    #   - channel: CHANNEL_STANDARD
+    initialNodeCount: 1
+    ipAllocationPolicy:
+      - {}
+    # Autopilot must be regional
+    location: us-central1
+    #location: us-central1-b
+    # loggingConfig:
+    #   - enableComponents:
+    #       - SYSTEM_COMPONENTS
+    #       - APISERVER
+    #       - CONTROLLER_MANAGER
+    #       - SCHEDULER
+    #       - WORKLOADS
+    # maintenancePolicy:
+    #   - dailyMaintenanceWindow:
+    #       - startTime: 06:00
+    # monitoringConfig:
+    #   - managedPrometheus:
+    #       - enabled: true
+        # Datapath is enabled in autopilot by default
+        # advancedDatapathObservabilityConfig:
+        #   - enableMetrics: true
+    # NetworkPolicy is already enabled when datapath/plane is enabled.
+    # networkPolicy:
+    #   - enabled: true
+    networkRef:
+      name: dev-network
+    # nodeConfig:
+    #   - serviceAccountRef:
+    #       name: gke-sa
+    #     spot: true
+    privateClusterConfig:
+      - enablePrivateNodes: true
+        enablePrivateEndpoint: true
+    project: crossplane-probe
+    removeDefaultNodePool: true
+    verticalPodAutoscaling:
+      - enabled: true
+    workloadIdentityConfig:
+      - workloadPool: crossplane-probe.svc.id.goog
+---
 apiVersion: compute.gcp.upbound.io/v1beta1
 kind: Network
 metadata:
