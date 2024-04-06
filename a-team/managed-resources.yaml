@@ -53,7 +53,7 @@ spec:
     #   - dailyMaintenanceWindow:
     #       - startTime: 06:00
     masterAuthorizedNetworksConfig:
-      - []
+      - {}
     # monitoringConfig:
     #   - managedPrometheus:
     #       - enabled: true
