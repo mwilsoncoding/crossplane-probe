@@ -148,8 +148,8 @@ spec:
     serviceAccount:
       - emailRef:
           name: gke-bastion
-        # scopes:
-        #   - cloud-platform
+        scopes:
+          - cloud-platform
     tags:
       - allow-ssh
     zone: us-central1-b
