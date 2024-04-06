@@ -129,6 +129,32 @@ spec:
       - allow-ssh
 ---
 apiVersion: compute.gcp.upbound.io/v1beta1
+kind: Instance
+metadata:
+  name: gke-bastion
+spec:
+  forProvider:
+    allowStoppingForUpdate: true
+    bootDisk:
+      - initializeParams:
+          - image: debian-cloud/debian-11
+    desiredStatus: RUNNING
+    machineType: e2-micro
+    metadataStartupScript: |-
+      gcloud components install gke-gcloud-auth-plugin
+    networkInterface:
+      - networkRef:
+          name: dev-network
+    serviceAccount:
+      - emailRef:
+          name: gke-bastion
+        # scopes:
+        #   - cloud-platform
+    tags:
+      - allow-ssh
+    zone: us-central1-b
+---
+apiVersion: compute.gcp.upbound.io/v1beta1
 kind: GlobalAddress
 metadata:
   annotations:
@@ -174,6 +200,16 @@ spec:
     region: us-central1
 ---
 apiVersion: cloudplatform.gcp.upbound.io/v1beta1
+kind: ServiceAccount
+metadata:
+  annotations:
+    meta.upbound.io/id: cloudplatform/v1beta1/serviceaccount
+  name: gke-bastion
+spec:
+  forProvider:
+    displayName: Service Account for GKE access
+---
+apiVersion: cloudplatform.gcp.upbound.io/v1beta1
 kind: ProjectIAMMember
 metadata:
   annotations:
@@ -209,6 +245,35 @@ spec:
       - name: google-managed-services-dev-network
     service: servicenetworking.googleapis.com
 ---
+apiVersion: compute.gcp.upbound.io/v1beta1
+kind: Instance
+metadata:
+  name: sql-bastion
+spec:
+  forProvider:
+    allowStoppingForUpdate: true
+    bootDisk:
+      - initializeParams:
+          - image: debian-cloud/debian-11
+    desiredStatus: RUNNING
+    machineType: e2-micro
+    metadataStartupScript: |-
+      apt-get update
+      apt-get install -y postgresql-client
+      curl -o /usr/bin/cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.10.1/cloud-sql-proxy.linux.amd64
+      chmod +x /usr/bin/cloud-sql-proxy
+    networkInterface:
+      - networkRef:
+          name: dev-network
+    serviceAccount:
+      - emailRef:
+          name: sql-bastion
+        scopes:
+          - https://www.googleapis.com/auth/sqlservice.admin
+    tags:
+      - allow-ssh
+    zone: us-central1-b
+---
 apiVersion: sql.gcp.upbound.io/v1beta1
 kind: DatabaseInstance
 metadata:
@@ -238,32 +303,3 @@ spec:
         tier: db-f1-micro
   publishConnectionDetailsTo:
     name: db-inst-02-connection
----
-apiVersion: compute.gcp.upbound.io/v1beta1
-kind: Instance
-metadata:
-  name: sql-bastion
-spec:
-  forProvider:
-    allowStoppingForUpdate: true
-    bootDisk:
-      - initializeParams:
-          - image: debian-cloud/debian-11
-    desiredStatus: RUNNING
-    machineType: e2-micro
-    metadataStartupScript: |-
-      apt-get update
-      apt-get install -y postgresql-client
-      curl -o /usr/bin/cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.10.1/cloud-sql-proxy.linux.amd64
-      chmod +x /usr/bin/cloud-sql-proxy
-    networkInterface:
-      - networkRef:
-          name: dev-network
-    serviceAccount:
-      - emailRef:
-          name: sql-bastion
-        scopes:
-          - https://www.googleapis.com/auth/sqlservice.admin
-    tags:
-      - allow-ssh
-    zone: us-central1-b
