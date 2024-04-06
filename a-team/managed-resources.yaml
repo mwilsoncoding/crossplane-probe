@@ -53,7 +53,7 @@ spec:
     #   - dailyMaintenanceWindow:
     #       - startTime: 06:00
     masterAuthorizedNetworksConfig:
-      - {}
+      - cidrBlocks: []
     # monitoringConfig:
     #   - managedPrometheus:
     #       - enabled: true
