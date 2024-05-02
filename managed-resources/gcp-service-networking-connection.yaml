@@ -1,0 +1,14 @@
+---
+apiVersion: servicenetworking.gcp.upbound.io/v1beta1
+kind: Connection
+metadata:
+  annotations:
+    meta.upbound.io/id: servicenetworking/v1beta1/connection
+  name: service-connection
+spec:
+  forProvider:
+    networkRef:
+      name: dev-network
+    reservedPeeringRangesRefs:
+      - name: google-managed-services-dev-network
+    service: servicenetworking.googleapis.com

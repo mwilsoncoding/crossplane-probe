@@ -1,0 +1,104 @@
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: google-postgresql
+  labels:
+    provider: google
+    db: postgresql
+spec:
+  writeConnectionSecretsToNamespace: a-team
+  compositeTypeRef:
+    apiVersion: maxwilson.dev/v1alpha1
+    kind: SQL
+  patchSets:
+    - name: metadata
+      patches:
+        - fromFieldPath: metadata.annotations
+          toFieldPath: metadata.annotations
+        - fromFieldPath: spec.id
+          toFieldPath: metadata.name
+  resources:
+    - name: sql
+      base:
+        apiVersion: sql.gcp.upbound.io/v1beta1
+        kind: DatabaseInstance
+        spec:
+          # This can override the top-level spec
+          writeConnectionSecretToRef:
+            namespace: a-team
+          forProvider:
+            deletionProtection: false
+            region: us-central1
+            rootPasswordSecretRef:
+              key: password
+              namespace: a-team
+            settings:
+              - availabilityType: REGIONAL
+                backupConfiguration:
+                  - enabled: true
+                    binaryLogEnabled: false
+                diskSize: 10
+                edition: ENTERPRISE
+                # insightsConfig:
+                #   - queryInsightsEnabled: true
+                #     queryStringLength: 4500
+                #     recordApplicationTags: true
+      patches:
+        - type: PatchSet
+          patchSetName: metadata
+        - fromFieldPath: spec.parameters.version
+          toFieldPath: spec.forProvider.databaseVersion
+          transforms:
+            - type: string
+              string:
+                fmt: POSTGRES_%s
+        - fromFieldPath: spec.parameters.size
+          toFieldPath: spec.forProvider.settings[0].tier
+          transforms:
+            - type: map
+              map:
+                small: db-f1-micro
+                medium: db-n1-standard-16
+                large: db-n1-standard-64
+        - fromFieldPath: spec.id
+          toFieldPath: spec.writeConnectionSecretToRef.name
+        - fromFieldPath: spec.id
+          toFieldPath: spec.forProvider.rootPasswordSecretRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-password"
+        # - fromFieldPath: spec.parameters.public
+        #   toFieldPath: spec.forProvider.settings[0].ipConfiguration[0].privateNetworkRef
+        #   transforms:
+        #     - type: map
+        #       map:
+        #         "true": 'null'
+        #         "false": '{"name": "dev-network"}'
+        #     - type: convert
+        #       convert:
+        #         toType: object
+        #         format: json
+        # - fromFieldPath: spec.parameters.public
+        #   toFieldPath: spec.forProvider.settings[0].ipConfiguration[0].ipv4Enabled
+    - name: user
+      base:
+        apiVersion: sql.gcp.upbound.io/v1beta1
+        kind: User
+        spec:
+          forProvider:
+            passwordSecretRef:
+              key: password
+              namespace: a-team
+            instanceSelector:
+              matchControllerRef: true
+      patches:
+        - type: PatchSet
+          patchSetName: metadata
+        - fromFieldPath: spec.id
+          toFieldPath: spec.forProvider.passwordSecretRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-password"

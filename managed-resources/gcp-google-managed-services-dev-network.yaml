@@ -1,0 +1,14 @@
+---
+apiVersion: compute.gcp.upbound.io/v1beta1
+kind: GlobalAddress
+metadata:
+  annotations:
+    meta.upbound.io/id: compute/v1beta1/globaladdress
+  name: google-managed-services-dev-network
+spec:
+  forProvider:
+    addressType: INTERNAL
+    networkRef:
+      name: dev-network
+    prefixLength: 16
+    purpose: VPC_PEERING

@@ -1,0 +1,6 @@
+---
+apiVersion: maxwilson.dev/v1alpha1
+kind: SQL
+metadata:
+  name: db-01
+spec: {}

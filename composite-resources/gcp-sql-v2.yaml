@@ -1,0 +1,25 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-inst-01-password
+  namespace: a-team
+data:
+  password: cGdwZ3BncGdwZ3BncGdwZw==
+---
+apiVersion: maxwilson.dev/v1alpha1
+kind: SQL
+metadata:
+  name: db-inst-01
+  annotations:
+    organization: Max Wilson Dev
+    author: Max Wilson <contact@maxwilson.dev>
+spec:
+  id: db-inst-01
+  compositionSelector:
+    matchLabels:
+      provider: google
+      db: postgresql
+  parameters:
+    version: "15"
+    size: small

@@ -1,0 +1,27 @@
+# ---
+# apiVersion: compute.gcp.upbound.io/v1beta1
+# kind: Instance
+# metadata:
+#   name: gke-bastion
+# spec:
+#   forProvider:
+#     allowStoppingForUpdate: true
+#     bootDisk:
+#       - initializeParams:
+#           - image: debian-cloud/debian-11
+#     desiredStatus: RUNNING
+#     machineType: e2-micro
+#     metadataStartupScript: |-
+#       apt-get update
+#       apt-get install -y kubectl google-cloud-sdk-gke-gcloud-auth-plugin
+#     networkInterface:
+#       - networkRef:
+#           name: dev-network
+#     serviceAccount:
+#       - emailRef:
+#           name: gke-bastion
+#         scopes:
+#           - cloud-platform
+#     tags:
+#       - allow-ssh
+#     zone: us-central1-b
